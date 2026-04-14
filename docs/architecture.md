@@ -2,28 +2,37 @@
 
 This document explains the design decisions and mathematical logic behind the Chess Move Recommendation System.
 
-## 1. The Core Philosophy: Human Success > Engine Perfection
-Traditional chess engines like Stockfish are "Black Box" models designed for mathematical perfection. However, for a human player, Stockfish's top recommendation might be a line that requires 20 moves of perfect accuracy to not lose instantly.
+## 1. The Core Philosophy: Practical Human Success
+Traditional chess engines like Stockfish are "Black Box" models designed for mathematical perfection. However, Stockfish's top recommendation might be a line that requires 20 moves of perfect accuracy to not lose instantly.
 
-This system takes a **Statistical AI** approach. We analyze how humans of different skill levels actually perform. If a move has a 60% win rate among humans but Stockfish hates it, our system will still recommend it as a "Success Choice" because it has proven effectiveness in practical play.
+This system takes a **Statistical AI** approach. We analyze how humans of different skill levels actually perform. If a move has a high win rate among humans but Stockfish dislikes it, our system will still highlight it as a "Success Choice" because it has proven effectiveness in practical play.
 
 ## 2. Bivariate Analysis: Rating vs. Success
 The goodness of a chess move is relative to the skill of the players. We implement **Bivariate Analysis** by grouping data into four Elo-based buckets:
-- **Novice (<1200)**: Casual play where tactical blunders are common.
-- **Intermediate (1200–1600)**: Club players where basic theory is known.
-- **Advanced (1600–2000)**: Strong players familiar with deep opening lines.
-- **Expert/Master (2000+)**: Competitive tournament play.
+- **Novice (<1200)**: Tactical blunders are common; practical tricks are highly effective.
+- **Intermediate (1200–1600)**: Club players where basic opening theory is established.
+- **Advanced (1600–2000)**: Strong players familiar with theoretical middle games.
+- **Expert/Master (2000+)**: Professional-level play where precision is significantly higher.
 
-This allows the AI to provide context: *"This move works great at 1400, but experts rarely play it because it's strategically risky."*
+This allows the AI to provide context: *"Experts win with this 65% of the time, but it's rarely played by novices."*
 
-## 3. Bayesian Smoothing: Eliminating the "Rare Move" Bias
-A major challenge in Big Data is handling data points with low support. A move played only once and won by luck would traditionally have a 100% win rate.
+## 3. Advanced Mathematical Logic
 
-We apply **Bayesian Smoothing** to all win rates:
+### Bayesian Smoothing
+To handle "Rare Move" bias (moves with 100% win rate from a single game), we apply Bayesian Smoothing:
 $$SmoothedWinRate = \frac{TotalWins + 5}{TotalGames + 10}$$
-This formula "pulls" the win rate toward 50% when the sample size is small. As a move gains hundreds of observations, the raw data begins to dominate the smoothed score, ensuring only statistically significant trends reach theTop 3.
+This "pulls" the win rate toward a 50% mean when sample size is low, ensuring only statistically significant moves reach the recommendations.
 
-## 4. Serving Layer: MongoDB Nested Documents
-To ensure the API handles requests in milliseconds, we use a **Single-Document-Per-FEN** structure in MongoDB.
-- **Hashed Index**: We use a hashed index on the FEN string for $O(1)$ search complexity.
-- **Nested Recommendations**: By nesting the Popular, Success, and Expert choices in one document, we avoid multiple database joins or queries, providing an ultra-responsive experience for the frontend.
+### Blended Confidence Score
+We rank moves using a weighted multi-factor formula:
+$$Score = (WinRate \times 0.5) + \left(\frac{AvgElo}{3000} \times 0.3\right) + (Popularity \times 0.2)$$
+This ensures that **Most Popular** moves (mainline theory) naturally compete with **High Success** moves (practical gems) and **Expert Picks**.
+
+### Blunder Guard
+A hard **0.5% Popularity Floor** is enforced. Any move played by fewer than 0.5% of players in that position is rejected from general recommendations to protect the user from statistical noise or fluke wins.
+
+## 4. Serving Model: Categorized Advice
+Instead of a single "Best Move," the system serves three distinct strategic choices:
+1. **Most Popular**: The consensus mainline choice.
+2. **Highest Success**: The move with the best practical win rate (smoothed).
+3. **Pro's Choice**: The move favored by players in the Expert bucket.

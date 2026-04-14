@@ -1,41 +1,50 @@
 # Chess Move Recommendation System ♟️🤖
 
-A high-performance Big Data & AI pipeline that analyzes millions of chess games to provide context-aware move recommendations based on historical human success rates, popularity, and player rating.
+A high-performance Big Data & AI pipeline that analyzes millions of chess positions using PySpark on HDFS to provide real-time, context-aware strategic advice.
 
 ## 🚀 Project Overview
-This project transforms raw PGN (Portable Game Notation) data into a real-time recommendation engine. Unlike traditional chess engines (like Stockfish) which focus on mathematical perfection, this system focuses on **Human Success Rates**. It answers the question: *"What do players at my level actually play, and what move wins the most often?"*
+This project transforms raw PGN (Portable Game Notation) data into a professional-grade analytical tool. Unlike traditional engines that seek mathematical perfection, this system uses **Human Success Rates** and **Bivariate Analysis** to recommend moves that win in practical play for specific rating levels.
 
 ### 🛠️ Tech Stack
 - **Storage**: HDFS (Pseudo-distributed)
-- **Processing**: PySpark (Batch Processing)
+- **Processing**: PySpark (Distributed Batch Modeling)
 - **Database**: MongoDB (Serving layer with Hashed Indexing)
-- **API**: FastAPI (Uvicorn)
-- **AI/ML**: Statistical Recommendation Engine with Bayesian Smoothing
+- **API**: FastAPI (Low-latency Serving)
+- **Frontend**: Vanilla JS + Chessboard.js (Futuristic Analytical UI)
 
 ## 🌟 Key Features
-- **Bivariate Analysis**: Evaluates move success relative to player Elo ratings.
-- **Bayesian Smoothing**: Pulls win rates toward a 50% mean to eliminate noise from low-sample "rare" moves.
-- **Blunder Guard**: Filters out sub-optimal moves with less than 0.5% popularity.
-- **Categorized Advice**: Provides three distinct recommendation types:
-  - 👥 **Most Popular**: The consensus move played by the majority.
-  - 🏆 **Highest Success**: The move with the best smoothed win rate.
-  - 🎓 **Pro's Choice**: The move trusted most by Experts (2000+ Elo).
+- **Categorized AI Selection**:
+  - 👥 **The Standard Path**: The consensus most popular move.
+  - 🏆 **The Statistical Edge**: The move with the highest Bayesian-smoothed win rate.
+  - 🎓 **The Master's Secret**: The move trusted by Expert/Master players (2000+ Elo).
+- **Bayesian Smoothing**: Eliminates "Rare Move" bias by pulling infrequent data toward a 50% mean.
+- **Blended Confidence Score**: Ranks moves by weighing Success (50%), Player Elo (30%), and Popularity (20%).
+- **Blunder Guard**: Automatically filters out moves with less than 0.5% popularity to ensure strategic reliability.
+- **Futuristic UI**: A Slate/Blue "Cyber Gray" dashboard with real-time analysis and glassmorphic cards.
 
 ## 📂 Project Structure
 - `/jobs`: PySpark batch jobs for PGN parsing, FEN explosion, and statistical modeling.
 - `/server`: FastAPI backend for real-time serving.
-- `/scripts`: Utility scripts for dataset management and HDFS uploads.
+- `/frontend`: Interactive UI with local high-contrast piece assets.
 - `/docs`: Detailed architecture and pipeline documentation.
 
 ## 🏁 Quick Start
 1. **Environment Setup**: `pip install -r requirements.txt`
-2. **Data Preparation**: Run `scripts/split_pgn.py` to chunk the dataset for Spark.
-3. **Data Pipeline**:
+2. **Data Pipeline**:
    - `python jobs/parse_pgn.py` (Parse PGN to Parquet)
-   - `python jobs/generate_positions.py` (Explode to 29M+ FEN states)
+   - `python jobs/generate_positions.py` (Explode to 29.2M FEN states)
    - `python jobs/build_recommendations.py` (Statistical Modeling)
    - `python jobs/load_to_mongodb.py` (Load to MongoDB)
-4. **Serving**: `python -m uvicorn server.main:app`
+3. **Serving (Backend)**: 
+   ```bash
+   python -m uvicorn server.main:app
+   ```
+4. **UI (Frontend)**:
+   ```bash
+   cd frontend
+   python -m http.server 5173
+   ```
 
 ## 📄 Documentation
-For a deep dive into the architecture and the step-by-step pipeline, check out the [docs/](docs/) folder.
+- [Architecture & AI Philosophy](docs/architecture.md)
+- [Step-by-Step Pipeline Walkthrough](docs/pipeline_walkthrough.md)
