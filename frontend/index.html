@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess AI | Strategic Recommendation Engine</title>
+    
+    <!-- Libraries (CDN) -->
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <i data-lucide="cpu" class="neon-icon"></i>
+                <h1>CHESS<span>AI</span></h1>
+            </div>
+            <div class="status-badge">
+                <span class="pulse"></span> LIVE ANALYTICS
+            </div>
+        </header>
+
+        <main class="main-layout">
+            <!-- Left: Chessboard -->
+            <section class="board-section">
+                <div id="board" class="cyber-board"></div>
+                <div class="board-controls">
+                    <button id="resetBtn" class="secondary-btn"><i data-lucide="rotate-ccw"></i> Reset</button>
+                    <button id="undoBtn" class="secondary-btn"><i data-lucide="undo-2"></i> Undo</button>
+                    <div class="fen-display">
+                        <span class="label">FEN:</span>
+                        <code id="fenText">rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -</code>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right: Analysis Panel -->
+            <section class="analysis-panel">
+                <div class="panel-header">
+                    <i data-lucide="bar-chart-3"></i>
+                    <h2>Strategic Analysis</h2>
+                </div>
+
+                <div id="recommendationCards" class="cards-container">
+                    <!-- Cards will be injected by app.js -->
+                    <div class="placeholder-card">
+                        <p>Make a move to see AI analysis...</p>
+                    </div>
+                </div>
+
+                <!-- Engine Stats Footer -->
+                <footer class="engine-stats">
+                    <div class="stat-item">
+                        <i data-lucide="zap"></i>
+                        <span id="latencyText">Latency: --ms</span>
+                    </div>
+                    <div class="stat-item">
+                        <i data-lucide="database"></i>
+                        <span>Context: 29.2M Positions</span>
+                    </div>
+                </footer>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
