@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Spark/Hadoop
+*.log
+metastore_db/
+spark-warehouse/
+derby.log
+.spark-staged/
+
+# OS/IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Project Specific
+datasets/*.zst
+datasets/chunks/
+datasets/*.pgn
+temp_data/

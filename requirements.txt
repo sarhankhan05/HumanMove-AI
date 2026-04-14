@@ -1,0 +1,5 @@
+pyspark==3.5.1
+chess==1.10.0
+pymongo==4.6.3
+pandas==2.2.2
+zstandard==0.22.0
