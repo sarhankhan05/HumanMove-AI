@@ -38,7 +38,7 @@ async function fetchRecommendations(fen) {
         }
 
         const data = await response.json();
-        renderRecommendations(data.recommendations);
+        renderRecommendations(data);
     } catch (error) {
         console.error('API Error:', error);
         $cardsContainer.html(`
@@ -49,56 +49,69 @@ async function fetchRecommendations(fen) {
     }
 }
 
-function renderRecommendations(recs) {
+function renderRecommendations(data) {
     $cardsContainer.empty();
     
-    const categories = [
-        { key: 'most_popular', title: 'The Standard Path', class: 'popular', icon: 'users' },
-        { key: 'highest_success', title: 'The Statistical Edge', class: 'success', icon: 'trophy' },
-        { key: 'pro_choice', title: 'The Master\'s Secret', class: 'expert', icon: 'graduation-cap' }
-    ];
-
-    categories.forEach(cat => {
-        const moveData = recs[cat.key];
-        if (!moveData) {
-            // As per user request, handle missing pro data transparently
-            if (cat.key === 'pro_choice') {
-                $cardsContainer.append(`
-                    <div class="rec-card disabled">
-                        <div class="card-type ${cat.class}">
-                            <i data-lucide="${cat.icon}"></i> ${cat.title}
-                        </div>
-                        <p class="explanation">Insufficient data for Expert analysis in this position.</p>
-                    </div>
-                `);
-            }
-            return;
-        }
-
-        const cardHtml = `
-            <div class="rec-card" onclick="highlightMoveOnBoard('${moveData.move}')">
-                <div class="card-type ${cat.class}">
-                    <i data-lucide="${cat.icon}"></i> ${cat.title}
+    // 1. Deep Learning AI Card
+    const aiData = data.deep_learning_ai;
+    if (aiData) {
+        const aiCard = `
+            <div class="rec-card" onclick="highlightMoveOnBoard('${aiData.move}')" style="border-color: var(--neon-accent); box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);">
+                <div class="card-type" style="color: var(--neon-accent);">
+                    <i data-lucide="cpu"></i> Deep Learning AI
                 </div>
                 <div class="card-main">
-                    <h3 class="move-txt">${rowToSan(moveData.move)}</h3>
+                    <h3 class="move-txt">${rowToSan(aiData.move)}</h3>
                     <div class="win-stat">
-                        <span class="win-pct">${Math.round(moveData.win_rate * 100)}%</span>
-                        <div class="win-label">SUCCESS</div>
+                        <span class="win-pct">${(aiData.confidence * 100).toFixed(1)}%</span>
+                        <div class="win-label">CONFIDENCE</div>
                     </div>
                 </div>
                 <div class="explanation">
-                    "${moveData.explanation}"
-                </div>
-                <div class="card-footer-stats">
-                    <span class="pop-stat">Played ${moveData.popularity}</span>
+                    "${aiData.explanation}"
                 </div>
             </div>
         `;
-        $cardsContainer.append(cardHtml);
-    });
+        $cardsContainer.append(aiCard);
+    }
 
-    // Re-initialize Lucide icons for new elements
+    // 2. Big Data Statistics Cards
+    const statsData = data.big_data_stats;
+    if (statsData) {
+        const categories = [
+            { key: 'most_popular', title: 'The Standard Path', class: 'popular', icon: 'users' },
+            { key: 'highest_success', title: 'The Statistical Edge', class: 'success', icon: 'trophy' },
+            { key: 'pro_choice', title: 'The Master\'s Secret', class: 'expert', icon: 'graduation-cap' }
+        ];
+
+        categories.forEach(cat => {
+            const moveData = statsData[cat.key];
+            if (!moveData) return;
+
+            const cardHtml = `
+                <div class="rec-card" onclick="highlightMoveOnBoard('${moveData.move}')">
+                    <div class="card-type ${cat.class}">
+                        <i data-lucide="${cat.icon}"></i> ${cat.title}
+                    </div>
+                    <div class="card-main">
+                        <h3 class="move-txt">${rowToSan(moveData.move)}</h3>
+                        <div class="win-stat">
+                            <span class="win-pct">${Math.round(moveData.win_rate * 100)}%</span>
+                            <div class="win-label">SUCCESS</div>
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        "${moveData.explanation}"
+                    </div>
+                    <div class="card-footer-stats">
+                        <span class="pop-stat">Played ${moveData.popularity}</span>
+                    </div>
+                </div>
+            `;
+            $cardsContainer.append(cardHtml);
+        });
+    }
+
     lucide.createIcons();
 }
 

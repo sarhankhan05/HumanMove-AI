@@ -1,48 +1,45 @@
-# Pipeline Walkthrough
+# Pipeline Walkthrough: Hybrid Engine
 
-This document serves as a step-by-step guide for developers to execute the data pipeline from raw PGN data to a live API and UI.
+This guide details the complete execution flow from raw PGN data to a live Hybrid AI interface.
 
-## Step 1: Data Chunking
-**File**: `scripts/split_pgn.py`
-- Splits large `.pgn.zst` files into ~128MB chunks for Spark parallelism.
-- **Output**: `datasets/chunks/*.pgn`.
+## Step 1: Data Chunking & HDFS Ingestion
+- Use `scripts/split_pgn.py` to chunk raw data into 128MB pieces.
+- Upload to HDFS using `scripts/hdfs_upload.cmd`.
 
-## Step 2: HDFS Ingestion
-**File**: `scripts/hdfs_upload.cmd`
-- Uploads raw chunks to HDFS storage.
-- **Output**: `hdfs://localhost:9000/chess/input/`.
+## Step 2: HDFS Optimization
+- Ensure `hdfs-site.xml` is configured with `dfs.blocksize = 128MB` and `dfs.replication = 3`. This is crucial for Phase 4.
 
-## Step 3: Distributed Parsing
-**File**: `jobs/parse_pgn.py`
-- Distributed parsing using PySpark and `chess.pgn`.
-- Filters for standard games and player Elo >= 1500.
-- **Output**: `hdfs://localhost:9000/chess/processed_games.parquet`.
+## Step 3: Distributed Parsing & Explosion
+- **`jobs/parse_pgn.py`**: Filter and structure the PGN into Parquet.
+- **`jobs/generate_positions.py`**: Expand games into ~29.2M board states (FENs).
 
-## Step 4: Position Explosion (FEN Generation)
-**File**: `jobs/generate_positions.py`
-- Explodes ~400k games into ~29.2M individual FEN board states.
-- **Output**: `hdfs://localhost:9000/chess/exploded_positions.parquet`.
+## Step 4: Tensor Engineering (Data Prep for AI)
+**File**: `jobs/generate_tensors.py`
+- Converts FEN strings into $8 \times 8 \times 12$ numerical arrays.
+- Filters for Expert-Only data (Elo >= 2000) to create a high-quality training set.
+- Maps UCI moves to a 4096-dimensional output vector.
+- **Output**: `hdfs:///chess/tensors.parquet`.
 
-## Step 5: Statistical AI Modeling
-**File**: `jobs/build_recommendations.py`
-- Calculates Win Rates, Popularity, and Blended Confidence scores.
-- Applies **Bayesian Smoothing** and **Blunder Guard** filters.
-- **Output**: `hdfs://localhost:9000/chess/move_stats.parquet`.
+## Step 5: Data Sync (HDFS to Local)
+- To avoid native HDFS library overhead during training, pull the tensors to the local disk:
+  ```bash
+  hdfs dfs -get /chess/tensors.parquet datasets/
+  ```
 
-## Step 6: MongoDB Serving Layer
-**File**: `jobs/load_to_mongodb.py`
-- Selects the **Categorized Top 3** (Most Popular, Success, Expert).
-- Nests recommendations into a single document per FEN with a Hashed Index.
-- **Output**: `chess_db.recommendations` collection.
+## Step 6: Deep Learning (CNN Training)
+**File**: `jobs/train_cnn.py`
+- Trains a Convolutional Neural Network using **PyTorch**.
+- Utilizes **CUDA** for GPU acceleration.
+- **Output**: `models/chess_cnn.pth` (Serialized weights).
 
-## Step 7: API Serving
+## Step 7: MongoDB Statistical Sync
+- Run `jobs/build_recommendations.py` and `jobs/load_to_mongodb.py` to populate the historical win-rate database for the "Hybrid" context.
+
+## Step 8: Hybrid Serving
 **File**: `server/main.py`
-- FastAPI server providing the `/recommend` endpoint with sub-50ms latency.
-- Configured with CORS for the frontend.
+- Launches a FastAPI server that performs **GPU Inference** on every request.
+- Combines AI strategy with Big Data statistics and returns a hybridized JSON response.
 
-## Step 8: Interactive Frontend UI
-**Directory**: `/frontend`
-- A futuristic "Cyber Gray" dashboard built with Vanilla HTML/CSS/JS.
-- **Move Logic**: Uses `chess.js` and `chessboard.js`.
-- **Local Assets**: All chess pieces are hosted locally in `frontend/img/` to ensure 100% reliability and offline availability.
-- **Launch**: Run `python -m http.server 5173` inside the `/frontend` directory.
+## Step 9: Analytical Interface
+- Serve the `/frontend` using a Python HTTP server.
+- The UI displays the "Deep Learning AI" card alongside the "Statistical Edge" cards for an explainable strategic overview.

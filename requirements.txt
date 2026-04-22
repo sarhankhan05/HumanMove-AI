@@ -1,3 +1,4 @@
+--extra-index-url https://download.pytorch.org/whl/cu118
 pyspark==3.5.1
 chess==1.10.0
 pymongo==4.6.3
@@ -5,3 +6,8 @@ pandas==2.2.2
 zstandard==0.22.0
 fastapi==0.111.0
 uvicorn==0.30.1
+torch>=2.0.0
+numpy>=1.24.0
+pyarrow>=10.0.0
+# pip uninstall torch torchvision torchaudio -y
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121

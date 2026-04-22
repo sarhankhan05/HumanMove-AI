@@ -1,50 +1,46 @@
-# Chess Move Recommendation System ♟️🤖
+# Hybrid Chess Move Recommendation System ♟️🤖
 
-A high-performance Big Data & AI pipeline that analyzes millions of chess positions using PySpark on HDFS to provide real-time, context-aware strategic advice.
+A high-performance Big Data & Deep Learning pipeline that analyzes millions of chess positions using PySpark on HDFS and a Convolutional Neural Network (CNN) to provide real-time, explainable strategic advice.
 
 ## 🚀 Project Overview
-This project transforms raw PGN (Portable Game Notation) data into a professional-grade analytical tool. Unlike traditional engines that seek mathematical perfection, this system uses **Human Success Rates** and **Bivariate Analysis** to recommend moves that win in practical play for specific rating levels.
+This project transforms raw PGN (Portable Game Notation) data into a professional-grade analytical tool. By combining **Big Data Statistics** (Human Success Rates) with **Deep Learning** (Strategic Pattern Recognition), the system provides a "Hybrid" recommendation that balances practical winning chances with theoretical master-level intent.
 
 ### 🛠️ Tech Stack
-- **Storage**: HDFS (Pseudo-distributed)
-- **Processing**: PySpark (Distributed Batch Modeling)
-- **Database**: MongoDB (Serving layer with Hashed Indexing)
-- **API**: FastAPI (Low-latency Serving)
-- **Frontend**: Vanilla JS + Chessboard.js (Futuristic Analytical UI)
+- **Storage**: HDFS (Optimized 128MB block sizing, Replication 3)
+- **Processing**: PySpark (Distributed Tensor Generation)
+- **AI**: PyTorch (CNN with 12-channel board representation + CUDA acceleration)
+- **Database**: MongoDB (Serving layer for historical success stats)
+- **API**: FastAPI (Hybrid Inference layer with Legal Move Masking)
+- **Frontend**: Vanilla JS (Futuristic Slate/Blue Analytical UI)
 
 ## 🌟 Key Features
-- **Categorized AI Selection**:
-  - 👥 **The Standard Path**: The consensus most popular move.
-  - 🏆 **The Statistical Edge**: The move with the highest Bayesian-smoothed win rate.
-  - 🎓 **The Master's Secret**: The move trusted by Expert/Master players (2000+ Elo).
-- **Bayesian Smoothing**: Eliminates "Rare Move" bias by pulling infrequent data toward a 50% mean.
-- **Blended Confidence Score**: Ranks moves by weighing Success (50%), Player Elo (30%), and Popularity (20%).
-- **Blunder Guard**: Automatically filters out moves with less than 0.5% popularity to ensure strategic reliability.
-- **Futuristic UI**: A Slate/Blue "Cyber Gray" dashboard with real-time analysis and glassmorphic cards.
+- **Hybrid AI Logic**:
+  - 🧠 **Deep Learning AI**: A CNN trained on 2.2M+ expert positions (Elo > 2000) to recognize strategic patterns.
+  - 📊 **Statistical Insights**: Real-time lookup of "Most Popular," "Highest Success," and "Master's Secret" from Big Data.
+- **Explainable Predictions**: The UI combines the CNN's confidence percentage with historical human win rates.
+- **Hadoop Optimization**: Configured HDFS for maximum Spark parallelism and Data Locality.
+- **Legal Move Masking**: The FastAPI layer applies an algorithmic mask to the CNN's output to ensure 100% tactical legality.
 
 ## 📂 Project Structure
-- `/jobs`: PySpark batch jobs for PGN parsing, FEN explosion, and statistical modeling.
-- `/server`: FastAPI backend for real-time serving.
-- `/frontend`: Interactive UI with local high-contrast piece assets.
-- `/docs`: Detailed architecture and pipeline documentation.
+- `/jobs`: PySpark batch jobs (PGN parsing, Tensor generation) and PyTorch training.
+- `/server`: Hybrid FastAPI backend.
+- `/frontend`: Interactive dashboard.
+- `/docs`: Detailed architecture and Hadoop optimization guides.
 
 ## 🏁 Quick Start
 1. **Environment Setup**: `pip install -r requirements.txt`
 2. **Data Pipeline**:
    - `python jobs/parse_pgn.py` (Parse PGN to Parquet)
-   - `python jobs/generate_positions.py` (Explode to 29.2M FEN states)
-   - `python jobs/build_recommendations.py` (Statistical Modeling)
-   - `python jobs/load_to_mongodb.py` (Load to MongoDB)
-3. **Serving (Backend)**: 
-   ```bash
-   python -m uvicorn server.main:app
-   ```
-4. **UI (Frontend)**:
-   ```bash
-   cd frontend
-   python -m http.server 5173
-   ```
+   - `python jobs/generate_positions.py` (Explode to FEN states)
+   - **New: `python jobs/generate_tensors.py`** (Generate 12x8x8 tensors)
+3. **Training**:
+   - `hdfs dfs -get /chess/tensors.parquet datasets/`
+   - **New: `python jobs/train_cnn.py`** (Train PyTorch CNN on GPU)
+4. **Serving**: 
+   - `python -m uvicorn server.main:app` (Hybrid API)
+   - `cd frontend && python -m http.server 5173` (Analytical UI)
 
 ## 📄 Documentation
-- [Architecture & AI Philosophy](docs/architecture.md)
-- [Step-by-Step Pipeline Walkthrough](docs/pipeline_walkthrough.md)
+- [Hybrid Architecture Philosophy](docs/architecture.md)
+- [Hadoop Optimization Guide](docs/hadoop_optimization.md)
+- [Pipeline Walkthrough](docs/pipeline_walkthrough.md)

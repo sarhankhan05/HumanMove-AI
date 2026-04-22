@@ -1,38 +1,34 @@
-# Project Architecture & AI Philosophy
+# Hybrid Architecture & AI Philosophy
 
-This document explains the design decisions and mathematical logic behind the Chess Move Recommendation System.
+This document explains the strategic shift from a purely statistical engine to a **Hybrid CNN-Statistical Engine**.
 
-## 1. The Core Philosophy: Practical Human Success
-Traditional chess engines like Stockfish are "Black Box" models designed for mathematical perfection. However, Stockfish's top recommendation might be a line that requires 20 moves of perfect accuracy to not lose instantly.
+## 1. The Need for Hybridization
+While statistical analysis tells us what *has worked* in the past (Human Success Rate), it cannot "understand" the board. By adding a Convolutional Neural Network (CNN), we introduce **Strategic Intent**. The system now knows not only that a move is popular, but why it is positionally sound based on piece interactions.
 
-This system takes a **Statistical AI** approach. We analyze how humans of different skill levels actually perform. If a move has a high win rate among humans but Stockfish dislikes it, our system will still highlight it as a "Success Choice" because it has proven effectiveness in practical play.
+## 2. The Deep Learning Layer (CNN)
 
-## 2. Bivariate Analysis: Rating vs. Success
-The goodness of a chess move is relative to the skill of the players. We implement **Bivariate Analysis** by grouping data into four Elo-based buckets:
-- **Novice (<1200)**: Tactical blunders are common; practical tricks are highly effective.
-- **Intermediate (1200–1600)**: Club players where basic opening theory is established.
-- **Advanced (1600–2000)**: Strong players familiar with theoretical middle games.
-- **Expert/Master (2000+)**: Professional-level play where precision is significantly higher.
+### Tensor Representation ($8 \times 8 \times 12$)
+We represent the board as a multidimensional numerical tensor.
+- **Dimensions**: 8x8 squares.
+- **Channels (12)**: 6 for White pieces (P, N, B, R, Q, K) and 6 for Black pieces (p, n, b, r, q, k).
+- **Encoding**: Binary encoding ($1$ if a piece is present, $0$ otherwise). This allows the CNN filters to recognize complex patterns like pawn chains, open files, and pins.
 
-This allows the AI to provide context: *"Experts win with this 65% of the time, but it's rarely played by novices."*
+### Expert-Only Training
+The CNN is trained exclusively on moves played by **Expert players (Elo > 2000)**. This ensures the network learns high-level strategic goals rather than just replicating "average" human play or common blunders.
 
-## 3. Advanced Mathematical Logic
+### Policy Head ($4096$)
+The output layer is a fully connected "Policy Head" that predicts a probability distribution over all 4096 possible from-to square combinations.
 
-### Bayesian Smoothing
-To handle "Rare Move" bias (moves with 100% win rate from a single game), we apply Bayesian Smoothing:
-$$SmoothedWinRate = \frac{TotalWins + 5}{TotalGames + 10}$$
-This "pulls" the win rate toward a 50% mean when sample size is low, ensuring only statistically significant moves reach the recommendations.
+## 3. The Statistical Layer (Big Data)
+While the CNN provides "Strategic Advice," the **Big Data** layer (MongoDB) provides **Empirical Context**. It answers: *"The AI likes this move, but how have regular humans of my rating level actually performed with it?"*
 
-### Blended Confidence Score
-We rank moves using a weighted multi-factor formula:
-$$Score = (WinRate \times 0.5) + \left(\frac{AvgElo}{3000} \times 0.3\right) + (Popularity \times 0.2)$$
-This ensures that **Most Popular** moves (mainline theory) naturally compete with **High Success** moves (practical gems) and **Expert Picks**.
+## 4. Hybrid Serving Logic
+The FastAPI serving layer integrates these two worlds:
+1. **Inference**: Converts FEN to tensor and runs the PyTorch model on the GPU.
+2. **Legal Move Masking**: An algorithmic filter is applied to the CNN output. We take the valid move list from the `chess` library and zero out any "illegal" predictions made by the network, ensuring 100% tactical accuracy.
+3. **Combination**: The final JSON response merges the CNN's strategic confidence with the historical win rates fetched from MongoDB.
 
-### Blunder Guard
-A hard **0.5% Popularity Floor** is enforced. Any move played by fewer than 0.5% of players in that position is rejected from general recommendations to protect the user from statistical noise or fluke wins.
-
-## 4. Serving Model: Categorized Advice
-Instead of a single "Best Move," the system serves three distinct strategic choices:
-1. **Most Popular**: The consensus mainline choice.
-2. **Highest Success**: The move with the best practical win rate (smoothed).
-3. **Pro's Choice**: The move favored by players in the Expert bucket.
+## 5. Scalability & Data Locality
+To handle the 29.2M position dataset, the pipeline is optimized for **Data Locality**:
+- **HDFS Block Sizing (128MB)**: Aligns HDFS storage with Spark's parallel task scheduling.
+- **Replication (Factor 3)**: Ensures data is available locally on multiple nodes, preventing network I/O bottlenecks during the tensor generation phase.
